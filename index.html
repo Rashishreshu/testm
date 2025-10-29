@@ -1,141 +1,67 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My PWA To-Do List</title>
+  <title>My PWA Web App</title>
 
-  <!-- Enable PWA capability -->
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icons for mobile -->
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Make it installable -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
-  <!-- Theme color -->
-  <meta name="theme-color" content="#2196F3">
-
-  <!-- Link to manifest.json -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Icons for home screen -->
-  <link rel="icon" sizes="192x192" href="icon-192x192.png">
-  <link rel="apple-touch-icon" href="icon-512x512.png">
-
-  <!-- Basic styling -->
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #333;
+    html, body {
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
+      height: 100%;
+      overflow: hidden;
+      background: #fff;
     }
-    h1 {
-      background: #2196F3;
-      color: white;
+    iframe {
       width: 100%;
-      text-align: center;
-      padding: 1rem;
-      margin: 0;
-    }
-    #todo-input {
-      padding: 0.7rem;
-      width: 70%;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-top: 20px;
-    }
-    button {
-      padding: 0.7rem 1.2rem;
+      height: 100%;
       border: none;
-      background: #2196F3;
-      color: white;
-      border-radius: 8px;
-      margin-left: 8px;
-      cursor: pointer;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 20px;
-      width: 80%;
-    }
-    li {
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    li button {
-      background: red;
-      padding: 5px 10px;
-      border-radius: 5px;
+    .offline-message {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      font-family: sans-serif;
     }
   </style>
 </head>
 <body>
-  <h1>My To-Do List (PWA)</h1>
-  <div>
-    <input type="text" id="todo-input" placeholder="Add a new task..." />
-    <button onclick="addTodo()">Add</button>
-  </div>
-  <ul id="todo-list"></ul>
+  <!-- Fallback message if offline -->
+  <div class="offline-message" id="offlineMsg">You’re offline. Please check your internet connection.</div>
+
+  <!-- Your website inside PWA -->
+  <iframe id="myFrame" src="https://yourwebsite.com"></iframe>
 
   <script>
-    const input = document.getElementById("todo-input");
-    const list = document.getElementById("todo-list");
-
-    // Load saved tasks
-    window.onload = function() {
-      const saved = JSON.parse(localStorage.getItem("todos")) || [];
-      saved.forEach(task => addTodoToList(task));
-    };
-
-    function addTodo() {
-      const task = input.value.trim();
-      if (task === "") return;
-      addTodoToList(task);
-      saveTask(task);
-      input.value = "";
+    // Simple service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('Service Worker registered'))
+      .catch(err => console.error('SW registration failed:', err));
     }
 
-    function addTodoToList(task) {
-      const li = document.createElement("li");
-      li.textContent = task;
-      const btn = document.createElement("button");
-      btn.textContent = "X";
-      btn.onclick = function() {
-        li.remove();
-        removeTask(task);
-      };
-      li.appendChild(btn);
-      list.appendChild(li);
-    }
+    // Detect offline mode
+    window.addEventListener('offline', () => {
+      document.getElementById('myFrame').style.display = 'none';
+      document.getElementById('offlineMsg').style.display = 'block';
+    });
 
-    function saveTask(task) {
-      const tasks = JSON.parse(localStorage.getItem("todos")) || [];
-      tasks.push(task);
-      localStorage.setItem("todos", JSON.stringify(tasks));
-    }
-
-    function removeTask(task) {
-      let tasks = JSON.parse(localStorage.getItem("todos")) || [];
-      tasks = tasks.filter(t => t !== task);
-      localStorage.setItem("todos", JSON.stringify(tasks));
-    }
-
-    // Register service worker
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("Service Worker Registered"))
-        .catch(err => console.log("SW registration failed", err));
-    }
+    window.addEventListener('online', () => {
+      document.getElementById('offlineMsg').style.display = 'none';
+      document.getElementById('myFrame').style.display = 'block';
+    });
   </script>
 </body>
 </html>
