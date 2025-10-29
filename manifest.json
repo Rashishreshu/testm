@@ -1,7 +1,7 @@
 {
   "name": "My PWA To-Do List",
   "short_name": "ToDo PWA",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2196F3",
@@ -9,12 +9,12 @@
   "lang": "hi",
   "icons": [
     {
-      "src": "http://googleusercontent.com/image_collection/image_retrieval/2048319554149166403_0",
+      "src": "icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "http://googleusercontent.com/image_collection/image_retrieval/2048319554149166403_1",
+      "src": "icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
