@@ -1,186 +1,141 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PWA ToDo List</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2196F3">
-    
-    <style>
-        /* CSS (Styling) */
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My PWA To-Do List</title>
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+  <!-- Enable PWA capability -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
-        h1 {
-            text-align: center;
-            color: #2196F3;
-        }
+  <!-- Theme color -->
+  <meta name="theme-color" content="#2196F3">
 
-        .input-group {
-            display: flex;
-            margin-bottom: 20px;
-        }
+  <!-- Link to manifest.json -->
+  <link rel="manifest" href="manifest.json">
 
-        #task-input {
-            flex-grow: 1;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px 0 0 5px;
-            font-size: 16px;
-        }
+  <!-- Icons for home screen -->
+  <link rel="icon" sizes="192x192" href="icon-192x192.png">
+  <link rel="apple-touch-icon" href="icon-512x512.png">
 
-        #add-button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        #add-button:hover {
-            background-color: #45a049;
-        }
-
-        .task-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .task-list li {
-            background: #fff;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-left: 5px solid #2196F3;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .task-text {
-            cursor: pointer;
-            flex-grow: 1;
-        }
-
-        .completed .task-text {
-            text-decoration: line-through;
-            color: #aaa;
-        }
-
-        .delete-button {
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-    </style>
+  <!-- Basic styling -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+    h1 {
+      background: #2196F3;
+      color: white;
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      margin: 0;
+    }
+    #todo-input {
+      padding: 0.7rem;
+      width: 70%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 0.7rem 1.2rem;
+      border: none;
+      background: #2196F3;
+      color: white;
+      border-radius: 8px;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      width: 80%;
+    }
+    li {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    li button {
+      background: red;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
+  <h1>My To-Do List (PWA)</h1>
+  <div>
+    <input type="text" id="todo-input" placeholder="Add a new task..." />
+    <button onclick="addTodo()">Add</button>
+  </div>
+  <ul id="todo-list"></ul>
 
-    <div class="container">
-        <h1>मेरी टू-डू लिस्ट</h1>
-        
-        <div class="input-group">
-            <input type="text" id="task-input" placeholder="नया कार्य जोड़ें...">
-            <button id="add-button" onclick="addTask()">जोड़ें</button>
-        </div>
-        
-        <ul class="task-list" id="list-container">
-            </ul>
-    </div>
+  <script>
+    const input = document.getElementById("todo-input");
+    const list = document.getElementById("todo-list");
 
-    <script>
-        // JavaScript (Functionality & PWA Registration)
+    // Load saved tasks
+    window.onload = function() {
+      const saved = JSON.parse(localStorage.getItem("todos")) || [];
+      saved.forEach(task => addTodoToList(task));
+    };
 
-        const input = document.getElementById('task-input');
-        const listContainer = document.getElementById('list-container');
+    function addTodo() {
+      const task = input.value.trim();
+      if (task === "") return;
+      addTodoToList(task);
+      saveTask(task);
+      input.value = "";
+    }
 
-        // Load tasks from Local Storage when the app starts
-        window.onload = loadTasks;
+    function addTodoToList(task) {
+      const li = document.createElement("li");
+      li.textContent = task;
+      const btn = document.createElement("button");
+      btn.textContent = "X";
+      btn.onclick = function() {
+        li.remove();
+        removeTask(task);
+      };
+      li.appendChild(btn);
+      list.appendChild(li);
+    }
 
-        // Function to add a new task
-        function addTask() {
-            const taskText = input.value.trim();
-            if (taskText === '') {
-                alert("कृपया कोई कार्य लिखें!");
-                return;
-            }
+    function saveTask(task) {
+      const tasks = JSON.parse(localStorage.getItem("todos")) || [];
+      tasks.push(task);
+      localStorage.setItem("todos", JSON.stringify(tasks));
+    }
 
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="task-text">${taskText}</span>
-                <button class="delete-button" onclick="deleteTask(this)">हटाएँ</button>
-            `;
-            
-            // Toggle 'completed' class when task text is clicked
-            li.querySelector('.task-text').addEventListener('click', function() {
-                li.classList.toggle('completed');
-                saveTasks();
-            });
+    function removeTask(task) {
+      let tasks = JSON.parse(localStorage.getItem("todos")) || [];
+      tasks = tasks.filter(t => t !== task);
+      localStorage.setItem("todos", JSON.stringify(tasks));
+    }
 
-            listContainer.appendChild(li);
-            input.value = ''; // Clear the input field
-            saveTasks();
-        }
-
-        // Function to delete a task
-        function deleteTask(button) {
-            button.parentElement.remove();
-            saveTasks();
-        }
-
-        // Save current tasks to Local Storage (for persistence)
-        function saveTasks() {
-            localStorage.setItem("tasks", listContainer.innerHTML);
-        }
-
-        // Load tasks from Local Storage
-        function loadTasks() {
-            listContainer.innerHTML = localStorage.getItem("tasks");
-            
-            // Reattach event listeners for newly loaded elements
-            listContainer.querySelectorAll('li').forEach(li => {
-                // Reattach click listener for completing the task
-                li.querySelector('.task-text').addEventListener('click', function() {
-                    li.classList.toggle('completed');
-                    saveTasks();
-                });
-                // Reattach click listener for deleting the task
-                li.querySelector('.delete-button').addEventListener('click', function() {
-                    deleteTask(this);
-                });
-            });
-        }
-
-        // --- PWA Service Worker Registration ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service Worker Registered'))
-                    .catch(err => console.log('Service Worker Registration Failed:', err));
-            });
-        }
-    </script>
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch(err => console.log("SW registration failed", err));
+    }
+  </script>
 </body>
 </html>
